@@ -109,6 +109,9 @@ jobs:
 
             echo "Verificando status..."
             docker ps --filter "name=backend"
+
+            echo "Adicionando backend_app à rede proxy-network do nginx..."
+            docker network connect proxy-network backend_app || true
           EOF
 
   resume:
