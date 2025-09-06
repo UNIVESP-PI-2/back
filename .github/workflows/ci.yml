@@ -70,25 +70,28 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} << EOF
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} bash << 'EOF'
             set -e
 
-            COMMIT_HASH=$(git rev-parse --short HEAD)
+            # Usa o hash do commit do GitHub Actions
+            COMMIT_HASH=${GITHUB_SHA:0:7}
             PROJECT_DIR=/home/deploy/homologacao/$COMMIT_HASH
 
             if [ -d "$PROJECT_DIR" ]; then
               echo "Removendo diretório antigo..."
-              rm -rf $PROJECT_DIR
+              rm -rf "$PROJECT_DIR"
             fi
-            echo "Clonando repositório..."
-            git clone https://github.com/${GITHUB_REPOSITORY}.git $PROJECT_DIR
 
-            cd $PROJECT_DIR/.docker
+            echo "Clonando repositório..."
+            git clone https://github.com/${GITHUB_REPOSITORY}.git "$PROJECT_DIR"
+
+            cd "$PROJECT_DIR/.docker"
 
             echo "Parando containers antigos..."
-            docker compose -f development-compose.yml -p backend down
+            docker compose -f development-compose.yml -p backend down || true
 
             echo "Criando arquivo de configuração..."
+
             echo "APP_PORT=${{ secrets.ENV_HOMO_APP_PORT }}" > ../.env
             echo "DB_DRIVER=${{ secrets.ENV_HOMO_DB_DRIVER }}" >> ../.env
             echo "DB_USER=${{ secrets.ENV_HOMO_DB_USER }}" >> ../.env
