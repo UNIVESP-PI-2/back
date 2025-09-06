@@ -74,6 +74,7 @@ jobs:
             set -e
 
             REPO="${{ github.repository }}"
+            BRANCH_NAME="${{ github.ref_name }}"
             COMMIT_HASH="${GITHUB_SHA:0:7}"
             PROJECT_DIR="/home/deploy/homologacao/\$COMMIT_HASH"
 
@@ -84,8 +85,9 @@ jobs:
 
             echo "Clonando repositório..."
             git clone "https://github.com/\$REPO.git" "\$PROJECT_DIR"
-
-            cd "\$PROJECT_DIR/.docker"
+            cd "\$PROJECT_DIR"
+            git checkout "$BRANCH_NAME"
+            cd .docker
 
             echo "Parando containers antigos..."
             docker compose -f development-compose.yml -p backend down || true
