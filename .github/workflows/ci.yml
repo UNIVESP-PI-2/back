@@ -70,11 +70,11 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
 
             # Caminho onde o projeto vai ficar no host
-            PROJECT_DIR=PROJECT_DIR=/tmp/deploy/backend_app
+            PROJECT_DIR=/tmp/deploy/backend_app
 
             if [ ! -d "$PROJECT_DIR" ]; then
               echo "Clonando repositório..."
@@ -83,7 +83,7 @@ jobs:
               echo "Atualizando repositório..."
               cd $PROJECT_DIR
               git reset --hard
-              git pull origin $GITHUB_REF_NAME
+              git pull origin ${GITHUB_REF_NAME}
             fi
 
             cd $PROJECT_DIR/.docker
