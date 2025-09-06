@@ -73,11 +73,11 @@ jobs:
           ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
 
-            # Caminho onde o projeto vai ficar no host
             PROJECT_DIR=/tmp/deploy/backend_app
 
-            if [ ! -d "$PROJECT_DIR" ]; then
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
               echo "Clonando repositório..."
+              rm -rf $PROJECT_DIR
               git clone https://github.com/${GITHUB_REPOSITORY}.git $PROJECT_DIR
             else
               echo "Atualizando repositório..."
