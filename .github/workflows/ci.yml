@@ -87,6 +87,10 @@ jobs:
             git clone "https://github.com/\$REPO.git" "\$PROJECT_DIR"
             cd "\$PROJECT_DIR"
             git checkout "${{ github.ref_name }}"
+
+            echo "Instalando dependências no host..."
+            npm install
+
             cd .docker
 
             echo "Parando containers antigos..."
