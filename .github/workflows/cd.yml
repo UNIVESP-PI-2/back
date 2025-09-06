@@ -1,0 +1,42 @@
+name: Continuous Deployment
+run-name: ${{ github.actor }} executando CD da branch ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  validation:
+    name: Valida Ambiente da Actions
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configuração do ambiente
+        run: echo "Configurações do actions..."
+      
+      - name: Verificando Rede
+        run: echo "Verificando conexão com host do deploy..."
+
+      - name: Variáveis de ambiente
+        run: echo "Confirmando a existencia de Variáveis necessárias para o deploy..."
+
+  deploy:
+    name: Deploy na produção
+    runs-on: ubuntu-latest
+    needs: validation
+    
+    steps:
+      - name: Configuração do ambiente de produção
+        run: echo "Configurando ambiente de produção..."
+      
+      - name: Verificando conexão com produção
+        run: echo "Verificando conexão com host de produção..."
+
+      - name: Deploy em produção
+        run: echo "Executando deploy em produção..."
+
+      - name: Verificar deploy produção
+        run: echo "Verificando se o deploy foi bem sucedido..."

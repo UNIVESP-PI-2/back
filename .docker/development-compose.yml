@@ -1,0 +1,26 @@
+
+services:
+
+  app:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
+    container_name: backend_app
+    volumes:
+      - ..:/app
+    ports:
+      - "${APP_PORT}:3000"
+    environment:
+      - DB_URI=${DB_URI}
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    container_name: backend_mongo
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}

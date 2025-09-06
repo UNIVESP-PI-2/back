@@ -1,0 +1,97 @@
+name: Continuous Integration
+run-name: ${{ github.actor }} executando CI da branch ${{ github.ref_name }}
+
+on:
+  push:
+    branches: 
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  validation:
+    name: Valida Ambiente da Acions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configuração do ambiente
+        run: echo "Configurações do actions..."
+      
+      - name: Verficando Rede
+        run: echo "Verificando conexão..."
+
+  build:
+    name: Faz build do projeto
+    runs-on: ubuntu-latest
+    needs: validation
+
+    steps:
+      - name: Clonando o repositório
+        run: echo "Clonando o repositório..."
+
+      - name: Verificanção do NodeJS
+        run: echo "Instalar o NodeJS, e ver a versão..."
+
+      - name: Instala depências do projeto
+        run: echo "npm install"
+
+      - name: Build do projeto
+        run: echo "npm build"
+
+  test-unid:
+    name: Testes de unidade
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Rodando testes de unidade
+        run: echo "Ainda não foi implementado nenhum teste de unidade."
+
+  test-integration:
+    name: Testes de Integração
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Rodando testes de integração
+        run: echo "Ainda não foi implementado nenhum teste de integração."
+
+  deploy-demo:
+    name: Deploy no ambiente de homologação
+    runs-on: ubuntu-latest
+    needs: [test-unid, test-integration]
+
+    steps:
+      - name: Configuração do ambiente
+        run: echo "Configurações do actions..."
+      
+      - name: Verficando Rede
+        run: echo "Verificando conexão com host do deploy..."
+
+      - name: Variáveis de ambiente
+        run: echo "Confirmando a existencia de Variaveis necessárias para o deploy..."
+
+      - name: Conectando no host de Homolocação
+        run: echo "Conectando..."
+
+      - name: Preparando ambiente
+        run: echo "Copiar repositório e Verificar dependências..."
+
+      - name: Parando o container antigo
+        run: echo "Parando o container antigo..."
+
+      - name: Subindo o novo container
+        run: echo "Realizando docker build e run..."
+
+      - name: Verificar deploy demo
+        run: echo "Verificando se container está ok..."
+
+  resume:
+    name: Resumo do CI
+    runs-on: ubuntu-latest
+    needs: deploy-demo
+
+    steps:
+      - name: Resumo da pipeline CI
+        run: echo "Resumindo..."
