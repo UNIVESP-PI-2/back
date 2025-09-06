@@ -75,16 +75,13 @@ jobs:
 
             PROJECT_DIR=/tmp/deploy/backend_app
 
-            if [ ! -d "$PROJECT_DIR/.git" ]; then
-              echo "Clonando repositório..."
+
+            if [ -d "$PROJECT_DIR" ]; then
+              echo "Removendo diretório antigo..."
               rm -rf $PROJECT_DIR
-              git clone https://github.com/${GITHUB_REPOSITORY}.git $PROJECT_DIR
-            else
-              echo "Atualizando repositório..."
-              cd $PROJECT_DIR
-              git reset --hard
-              git pull origin ${GITHUB_REF_NAME}
             fi
+            echo "Clonando repositório..."
+            git clone https://github.com/${GITHUB_REPOSITORY}.git $PROJECT_DIR
 
             cd $PROJECT_DIR/.docker
 
