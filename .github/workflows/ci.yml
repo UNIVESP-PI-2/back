@@ -57,40 +57,59 @@ jobs:
       - name: Rodando testes de integração
         run: echo "Ainda não foi implementado nenhum teste de integração."
 
-  deploy-demo:
+  deploy-homologacao:
     name: Deploy no ambiente de homologação
     runs-on: ubuntu-latest
     needs: [test-unid, test-integration]
 
     steps:
-      - name: Configuração do ambiente
-        run: echo "Configurações do actions..."
-      
-      - name: Verficando Rede
-        run: echo "Verificando conexão com host do deploy..."
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_SECRET_KEY }}
 
-      - name: Variáveis de ambiente
-        run: echo "Confirmando a existencia de Variaveis necessárias para o deploy..."
+      - name: Deploy via SSH
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_NAME_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
 
-      - name: Conectando no host de Homolocação
-        run: echo "Conectando..."
+            # Caminho onde o projeto vai ficar no host
+            PROJECT_DIR=PROJECT_DIR=/tmp/deploy/backend_app
 
-      - name: Preparando ambiente
-        run: echo "Copiar repositório e Verificar dependências..."
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "Clonando repositório..."
+              git clone https://github.com/${GITHUB_REPOSITORY}.git $PROJECT_DIR
+            else
+              echo "Atualizando repositório..."
+              cd $PROJECT_DIR
+              git reset --hard
+              git pull origin $GITHUB_REF_NAME
+            fi
 
-      - name: Parando o container antigo
-        run: echo "Parando o container antigo..."
+            cd $PROJECT_DIR/.docker
 
-      - name: Subindo o novo container
-        run: echo "Realizando docker build e run..."
+            echo "Parando containers antigos..."
+            docker compose -f development-compose.yml -p backend down
 
-      - name: Verificar deploy demo
-        run: echo "Verificando se container está ok..."
+            echo "Criando arquivo de configuração..."
+            echo "APP_PORT=${{ secrets.ENV_HOMO_APP_PORT }}" > ../.env
+            echo "DB_DRIVER=${{ secrets.ENV_HOMO_DB_DRIVER }}" >> ../.env
+            echo "DB_USER=${{ secrets.ENV_HOMO_DB_USER }}" >> ../.env
+            echo "DB_PORT=${{ secrets.ENV_HOMO_DB_PORT }}" >> ../.env
+            echo "DB_PASS=${{ secrets.ENV_HOMO_DB_PASS }}" >> ../.env
+            echo "DB_URI=${{ secrets.ENV_HOMO_DB_URI }}" >> ../.env
+
+            echo "Subindo containers..."
+            docker compose -f development-compose.yml -p backend --env-file ../.env up -d --build
+
+            echo "Verificando status..."
+            docker ps --filter "name=backend"
+          EOF
 
   resume:
     name: Resumo do CI
     runs-on: ubuntu-latest
-    needs: deploy-demo
+    needs: deploy-homologacao
 
     steps:
       - name: Resumo da pipeline CI
