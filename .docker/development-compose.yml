@@ -21,6 +21,9 @@ services:
     restart: unless-stopped
     ports:
       - "${DB_PORT}:27017"
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+      MONGO_INITDB_DATABASE: ${DATABASE}
