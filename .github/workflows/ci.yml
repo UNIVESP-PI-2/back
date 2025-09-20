@@ -103,6 +103,8 @@ jobs:
             echo "DB_PORT=${{ secrets.ENV_HOMO_DB_PORT }}" >> ../.env
             echo "DB_PASS=${{ secrets.ENV_HOMO_DB_PASS }}" >> ../.env
             echo "DB_URI=${{ secrets.ENV_HOMO_DB_URI }}" >> ../.env
+            echo "DATABASE=${{ secrets.ENV_HOMO_DATABASE }}" >> ../.env
+            echo "JWT_SECRET=${{ secrets.ENV_HOMO_JWT_SECRET }}" >> ../.env
 
             echo "Subindo containers..."
             docker compose -f development-compose.yml -p backend --env-file ../.env up -d --build

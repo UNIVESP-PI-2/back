@@ -12,7 +12,7 @@ if (!existingAdmin) {
     // Criar usuário administrador padrão
     const result = db.users.insertOne({
         email: "admin@123",
-        senha: "admin",
+        password: "admin",
         createdAt: new Date(),
         isAdmin: true
     });
