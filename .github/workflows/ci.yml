@@ -105,6 +105,7 @@ jobs:
             echo "DB_URI=${{ secrets.ENV_HOMO_DB_URI }}" >> ../.env
             echo "DATABASE=${{ secrets.ENV_HOMO_DATABASE }}" >> ../.env
             echo "JWT_SECRET=${{ secrets.ENV_HOMO_JWT_SECRET }}" >> ../.env
+            echo "HEADER_START=${{ secrets.ENV_HOMO_HEADER_START }}" >> ../.env
 
             echo "Subindo containers..."
             docker compose -f development-compose.yml -p backend --env-file ../.env up -d --build
