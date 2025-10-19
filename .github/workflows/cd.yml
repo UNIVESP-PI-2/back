@@ -2,7 +2,10 @@ name: CD - Backend
 run-name: Deploy Backend da branch ${{ github.ref_name }}
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI - Backend"]
+    types:
+      - completed
     branches:
       - main
       - homo
@@ -15,7 +18,7 @@ jobs:
   deploy:
     name: Deploy no VPS
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main' || github.ref_name == 'homo'
+    if: ${{ github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'homo') }}
 
     steps:
       - name: Checkout código
@@ -24,11 +27,12 @@ jobs:
       - name: Determinar ambiente
         id: env
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          BRANCH_NAME="${{ github.event.workflow_run.head_branch }}"
+          if [[ "$BRANCH_NAME" == "main" ]]; then
             echo "ENVIRONMENT=prod" >> $GITHUB_OUTPUT
             echo "COMPOSE_FILE=producao-compose.yml" >> $GITHUB_OUTPUT
             echo "ENV_PREFIX=BACKEND_PROD" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref_name }}" == "homo" ]]; then
+          elif [[ "$BRANCH_NAME" == "homo" ]]; then
             echo "ENVIRONMENT=homo" >> $GITHUB_OUTPUT
             echo "COMPOSE_FILE=homologacao-compose.yml" >> $GITHUB_OUTPUT
             echo "ENV_PREFIX=BACKEND_HOMO" >> $GITHUB_OUTPUT
