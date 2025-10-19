@@ -90,3 +90,4 @@ git commit -m "fix: corrigir autenticação e variáveis de ambiente"
 git push origin ci/cd
 ```
 # Deploy com compose files unificados
+# Deploy ready
