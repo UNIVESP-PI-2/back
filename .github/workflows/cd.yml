@@ -60,24 +60,6 @@ jobs:
             # Navegar para diretório de compose
             cd "$REPO_DIR"
             
-            echo "Criando arquivo .env para $ENVIRONMENT..."
-            cat > .env.$ENVIRONMENT << ENVEOF
-            BACKEND_HOMO_DB_URI=${{ secrets.BACKEND_HOMO_DB_URI }}
-            BACKEND_HOMO_DB_USER=${{ secrets.BACKEND_HOMO_DB_USER }}
-            BACKEND_HOMO_DB_PASS=${{ secrets.BACKEND_HOMO_DB_PASS }}
-            BACKEND_HOMO_DATABASE=${{ secrets.BACKEND_HOMO_DATABASE }}
-            BACKEND_HOMO_JWT_SECRET=${{ secrets.BACKEND_HOMO_JWT_SECRET }}
-            BACKEND_HOMO_HEADER_START=${{ secrets.BACKEND_HOMO_HEADER_START }}
-            BACKEND_HOMO_DEBUG=true
-            BACKEND_PROD_DB_URI=${{ secrets.BACKEND_PROD_DB_URI }}
-            BACKEND_PROD_DB_USER=${{ secrets.BACKEND_PROD_DB_USER }}
-            BACKEND_PROD_DB_PASS=${{ secrets.BACKEND_PROD_DB_PASS }}
-            BACKEND_PROD_DATABASE=${{ secrets.BACKEND_PROD_DATABASE }}
-            BACKEND_PROD_JWT_SECRET=${{ secrets.BACKEND_PROD_JWT_SECRET }}
-            BACKEND_PROD_HEADER_START=${{ secrets.BACKEND_PROD_HEADER_START }}
-            BACKEND_PROD_DEBUG=false
-            ENVEOF
-            
             echo "Fazendo login no GitHub Container Registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.repository_owner }}" --password-stdin ${{ env.REGISTRY }}
             
