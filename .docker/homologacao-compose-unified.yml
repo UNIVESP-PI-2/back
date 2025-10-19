@@ -7,14 +7,14 @@ services:
     container_name: homo-front-app
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
     networks:
       - homo-network-app
       - proxy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
