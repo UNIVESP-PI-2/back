@@ -12,6 +12,7 @@ services:
       - NODE_ENV=production
     networks:
       - homo-network-app
+      - proxy-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/"]
       interval: 30s
@@ -42,6 +43,7 @@ services:
       - db
     networks:
       - homo-network-app
+      - proxy-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -62,6 +64,7 @@ services:
       - homo-mongo-data:/data/db
     networks:
       - homo-network-app
+      - proxy-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
@@ -70,6 +73,8 @@ services:
 
 networks:
   homo-network-app:
+    external: true
+  proxy-network:
     external: true
 
 volumes:
