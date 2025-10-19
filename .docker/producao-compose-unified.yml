@@ -31,14 +31,15 @@ services:
       - "3003:3000"
     environment:
       - NODE_ENV=production
-      - DEBUG=${BACKEND_PROD_DEBUG:-false}
-      - DB_URI=${BACKEND_PROD_DB_URI}
-      - DB_USER=${BACKEND_PROD_DB_USER}
-      - DB_PASS=${BACKEND_PROD_DB_PASS}
+      - DEBUG=false
+      - DB_URI=${DB_URI}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
       - DB_PORT=27017
-      - DATABASE=${BACKEND_PROD_DATABASE}
-      - JWT_SECRET=${BACKEND_PROD_JWT_SECRET}
-      - HEADER_START=${BACKEND_PROD_HEADER_START}
+      - DATABASE=${DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - HEADER_START=${HEADER_START}
+      - APP_PORT=3000
     depends_on:
       - db
     networks:
@@ -57,9 +58,9 @@ services:
     container_name: prod-back-db
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${BACKEND_PROD_DB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${BACKEND_PROD_DB_PASS}
-      MONGO_INITDB_DATABASE: ${BACKEND_PROD_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+      MONGO_INITDB_DATABASE: ${DATABASE}
     volumes:
       - prod-mongo-data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d
