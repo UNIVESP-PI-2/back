@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ghcr.io/univesp-pi-2/backend:latest
+    container_name: prod-back-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DEBUG=${BACKEND_PROD_DEBUG:-false}
+      - DB_URI=${BACKEND_PROD_DB_URI}
+      - DB_USER=${BACKEND_PROD_DB_USER}
+      - DB_PASS=${BACKEND_PROD_DB_PASS}
+      - DB_PORT=27017
+      - DATABASE=${BACKEND_PROD_DATABASE}
+      - JWT_SECRET=${BACKEND_PROD_JWT_SECRET}
+      - HEADER_START=${BACKEND_PROD_HEADER_START}
+    depends_on:
+      - db
+    networks:
+      - prod-network-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: mongo:latest
+    container_name: prod-back-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${BACKEND_PROD_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${BACKEND_PROD_DB_PASS}
+      MONGO_INITDB_DATABASE: ${BACKEND_PROD_DATABASE}
+    volumes:
+      - prod-mongo-data:/data/db
+    networks:
+      - prod-network-app
+
+networks:
+  prod-network-app:
+    external: true
+
+volumes:
+  prod-mongo-data:
+    external: true
