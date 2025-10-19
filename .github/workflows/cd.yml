@@ -68,7 +68,8 @@ jobs:
             fi
             
             echo "Limpando containers órfãos..."
-            docker ps -a | grep -E "(homo-|prod-)" | awk '{print $1}' | xargs -r docker rm -f || true
+            # Remover apenas containers orphaned que foram parados
+            docker container prune -f || true
             
             echo "Atualizando containers..."
             if [[ "$ENVIRONMENT" == "prod" ]]; then
