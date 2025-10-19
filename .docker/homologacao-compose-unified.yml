@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: homo-app
+
 services:
   # ============ FRONTEND HOMOLOGAÇÃO ============
   frontend:

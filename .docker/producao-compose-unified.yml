@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: prod-app
+
 services:
   # ============ FRONTEND PRODUÇÃO ============
   frontend:
