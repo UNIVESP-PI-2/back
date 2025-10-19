@@ -78,6 +78,20 @@ jobs:
         if: github.ref_name == 'main' || github.ref_name == 'homo'
         uses: docker/setup-buildx-action@v3
 
+      - name: Formatar tags para build
+        if: github.ref_name == 'main' || github.ref_name == 'homo'
+        id: tags
+        run: |
+          TAGS_LIST="${{ steps.meta.outputs.TAGS }}"
+          REGISTRY_TAGS=""
+          for tag in ${TAGS_LIST//,/ }; do
+            REGISTRY_TAGS="$REGISTRY_TAGS
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$tag"
+          done
+          echo "FORMATTED_TAGS<<EOF" >> $GITHUB_OUTPUT
+          echo "$REGISTRY_TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Build e Push da imagem Docker
         if: github.ref_name == 'main' || github.ref_name == 'homo'
         uses: docker/build-push-action@v5
@@ -87,8 +101,7 @@ jobs:
           build-args: |
             DEBUG=${{ steps.meta.outputs.DEBUG_FLAG }}
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.TAGS }}
+          tags: ${{ steps.tags.outputs.FORMATTED_TAGS }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
