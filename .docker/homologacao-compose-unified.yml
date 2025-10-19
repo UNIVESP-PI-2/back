@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # ============ FRONTEND HOMOLOGAÇÃO ============
+  frontend:
+    image: ghcr.io/univesp-pi-2/frontend:homo-latest
+    container_name: homo-front-app
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - homo-network-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - backend
+
+  # ============ BACKEND HOMOLOGAÇÃO ============
+  backend:
+    image: ghcr.io/univesp-pi-2/backend:homo-latest
+    container_name: homo-back-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DEBUG=${BACKEND_HOMO_DEBUG:-true}
+      - DB_URI=${BACKEND_HOMO_DB_URI}
+      - DB_USER=${BACKEND_HOMO_DB_USER}
+      - DB_PASS=${BACKEND_HOMO_DB_PASS}
+      - DB_PORT=27017
+      - DATABASE=${BACKEND_HOMO_DATABASE}
+      - JWT_SECRET=${BACKEND_HOMO_JWT_SECRET}
+      - HEADER_START=${BACKEND_HOMO_HEADER_START}
+    depends_on:
+      - db
+    networks:
+      - homo-network-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============ MONGODB HOMOLOGAÇÃO ============
+  db:
+    image: mongo:latest
+    container_name: homo-back-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${BACKEND_HOMO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${BACKEND_HOMO_DB_PASS}
+      MONGO_INITDB_DATABASE: ${BACKEND_HOMO_DATABASE}
+    volumes:
+      - homo-mongo-data:/data/db
+    networks:
+      - homo-network-app
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  homo-network-app:
+    external: true
+
+volumes:
+  homo-mongo-data:
+    external: true
