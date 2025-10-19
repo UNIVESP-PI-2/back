@@ -62,6 +62,7 @@ services:
       MONGO_INITDB_DATABASE: ${BACKEND_PROD_DATABASE}
     volumes:
       - prod-mongo-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
     networks:
       - prod-network-app
       - proxy-network

@@ -62,6 +62,7 @@ services:
       MONGO_INITDB_DATABASE: ${BACKEND_HOMO_DATABASE}
     volumes:
       - homo-mongo-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
     networks:
       - homo-network-app
       - proxy-network
