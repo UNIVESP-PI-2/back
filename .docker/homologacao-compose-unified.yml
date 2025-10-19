@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: homo-app
+
 services:
   # ============ FRONTEND HOMOLOGAÇÃO ============
   frontend:
@@ -27,8 +29,8 @@ services:
     image: ghcr.io/univesp-pi-2/backend:homo-latest
     container_name: homo-back-app
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - DEBUG=${DEBUG:-true}

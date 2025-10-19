@@ -1,13 +1,15 @@
 version: '3.8'
 
+name: prod-app
+
 services:
   # ============ FRONTEND PRODUÇÃO ============
   frontend:
     image: ghcr.io/univesp-pi-2/frontend:latest
     container_name: prod-front-app
     restart: unless-stopped
-    ports:
-      - "3002:80"
+    expose:
+      - "80"
     environment:
       - NODE_ENV=production
     networks:
@@ -27,8 +29,8 @@ services:
     image: ghcr.io/univesp-pi-2/backend:latest
     container_name: prod-back-app
     restart: unless-stopped
-    ports:
-      - "3003:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - DEBUG=false

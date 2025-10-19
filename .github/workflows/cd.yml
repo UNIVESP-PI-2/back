@@ -67,15 +67,14 @@ jobs:
               docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:homo-latest
             fi
             
-            echo "Limpando containers órfãos..."
-            docker ps -a | grep -E "(homo-|prod-)" | awk '{print $1}' | xargs -r docker rm -f || true
-            
-            echo "Atualizando containers..."
+            echo "Atualizando containers do ambiente: $ENVIRONMENT"
             if [[ "$ENVIRONMENT" == "prod" ]]; then
-              docker compose -f "producao-compose-unified.yml" --env-file .env.prod down || true
+              # Para PROD: atualizar apenas containers de PROD
+              docker compose -f "producao-compose-unified.yml" --env-file .env.prod pull || true
               docker compose -f "producao-compose-unified.yml" --env-file .env.prod up -d --no-build
             else
-              docker compose -f "homologacao-compose-unified.yml" --env-file .env.homo down || true
+              # Para HOMO: atualizar apenas containers de HOMO
+              docker compose -f "homologacao-compose-unified.yml" --env-file .env.homo pull || true
               docker compose -f "homologacao-compose-unified.yml" --env-file .env.homo up -d --no-build
             fi
             
