@@ -1,0 +1,120 @@
+name: CD - Backend
+run-name: Deploy Backend da branch ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+      - homo
+    paths-ignore:
+      - '.github/workflows/ci.yml'
+      - '**.md'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: univesp-pi-2/backend
+
+jobs:
+  deploy:
+    name: Deploy no VPS
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main' || github.ref_name == 'homo'
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Determinar ambiente
+        id: env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=producao-compose.yml" >> $GITHUB_OUTPUT
+            echo "ENV_PREFIX=BACKEND_PROD" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == "homo" ]]; then
+            echo "ENVIRONMENT=homo" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=homologacao-compose.yml" >> $GITHUB_OUTPUT
+            echo "ENV_PREFIX=BACKEND_HOMO" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy via SSH (Backend)
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} bash << 'DEPLOY_SCRIPT'
+            
+            set -e
+            
+            ENVIRONMENT="${{ steps.env.outputs.ENVIRONMENT }}"
+            COMPOSE_FILE="${{ steps.env.outputs.COMPOSE_FILE }}"
+            REPO_DIR="/opt/compose"
+            
+            echo "=========================================="
+            echo "Iniciando deploy do Backend - $ENVIRONMENT"
+            echo "=========================================="
+            
+            # Navegar para diretório de compose
+            cd "$REPO_DIR"
+            
+            echo "Criando arquivo .env para $ENVIRONMENT..."
+            cat > .env.$ENVIRONMENT << ENVEOF
+            BACKEND_HOMO_DB_URI=${{ secrets.BACKEND_HOMO_DB_URI }}
+            BACKEND_HOMO_DB_USER=${{ secrets.BACKEND_HOMO_DB_USER }}
+            BACKEND_HOMO_DB_PASS=${{ secrets.BACKEND_HOMO_DB_PASS }}
+            BACKEND_HOMO_DATABASE=${{ secrets.BACKEND_HOMO_DATABASE }}
+            BACKEND_HOMO_JWT_SECRET=${{ secrets.BACKEND_HOMO_JWT_SECRET }}
+            BACKEND_HOMO_HEADER_START=${{ secrets.BACKEND_HOMO_HEADER_START }}
+            BACKEND_HOMO_DEBUG=true
+            BACKEND_PROD_DB_URI=${{ secrets.BACKEND_PROD_DB_URI }}
+            BACKEND_PROD_DB_USER=${{ secrets.BACKEND_PROD_DB_USER }}
+            BACKEND_PROD_DB_PASS=${{ secrets.BACKEND_PROD_DB_PASS }}
+            BACKEND_PROD_DATABASE=${{ secrets.BACKEND_PROD_DATABASE }}
+            BACKEND_PROD_JWT_SECRET=${{ secrets.BACKEND_PROD_JWT_SECRET }}
+            BACKEND_PROD_HEADER_START=${{ secrets.BACKEND_PROD_HEADER_START }}
+            BACKEND_PROD_DEBUG=false
+            ENVEOF
+            
+            echo "Fazendo login no GitHub Container Registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin ${{ env.REGISTRY }}
+            
+            echo "Pulling nova imagem Docker..."
+            if [[ "$ENVIRONMENT" == "prod" ]]; then
+              docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            else
+              docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:homo-latest
+            fi
+            
+            echo "Atualizando containers..."
+            docker compose -f $COMPOSE_FILE --env-file .env.$ENVIRONMENT down || true
+            docker compose -f $COMPOSE_FILE --env-file .env.$ENVIRONMENT up -d --no-build
+            
+            echo "Verificando status dos containers..."
+            docker ps --filter "name=$ENVIRONMENT-back"
+            
+            echo "Deploy do Backend concluído com sucesso!"
+            
+          DEPLOY_SCRIPT
+
+      - name: Verificar saúde do serviço
+        run: |
+          echo "Verificando saúde do serviço..."
+          # Opcional: adicionar health checks aqui
+
+      - name: Notificar sucesso
+        run: |
+          echo "## ✅ Deploy Backend Concluído" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ambiente**: ${{ steps.env.outputs.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notificar erro
+        if: failure()
+        run: |
+          echo "## ❌ Deploy Backend Falhou" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ambiente**: ${{ steps.env.outputs.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "Verifique os logs do SSH para mais detalhes."

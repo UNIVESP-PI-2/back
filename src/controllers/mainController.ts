@@ -11,29 +11,37 @@ interface RequestMiddleware extends Request {
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log(req.body);
+  console.log('Login attempt:', req.body);
   if (!email || !password) {
+    console.log('Missing email or password');
     res.json({ msg: "Usuário ou Senha não informados!" });
     return;
   }
 
+  console.log('Searching for user:', email);
   const dadosUsuario = await UsersDAO.getUser(email);
+  console.log('User found:', dadosUsuario);
 
   //Se o usuário não existe
   if (!dadosUsuario) {
+    console.log('User not found in database');
     res.json({ msg: `Usuário ou senhas inválidos!` });
     return;
   }
 
+  console.log('Comparing passwords:', { provided: password, stored: dadosUsuario.password });
   //Se usuário existe testa a senha e retorna
   if (dadosUsuario.password === password) {
+    console.log('Password match - generating token');
     const date = new Date().getDate();
     const token = jwt.sign({ date, email }, process.env.JWT_SECRET as string, {
       expiresIn: "10d",
     });
 
+    console.log('Login successful, returning token');
     res.status(200).json({ msg: "logado", token });
   } else {
+    console.log('Password mismatch');
     res.status(401).json({ msg: "senha inválida" });
   }
 };
@@ -53,7 +61,17 @@ const responder = async (req: RequestMiddleware, res: Response) => {
 
 const teste = async (req: Request, res: Response) => {
   const data = new Date();
-  res.json({ msg: `Resposta ok as: ${data}` });
+  const diagnostics = {
+    timestamp: data,
+    message: `Resposta ok as: ${data}`,
+    environment: {
+      JWT_SECRET: process.env.JWT_SECRET ? '✓ Configurado' : '✗ Não configurado',
+      DATABASE: process.env.DATABASE || '✗ Não configurado',
+      DB_URI: process.env.DB_URI ? '✓ Configurado' : '✗ Não configurado',
+      HEADER_START: process.env.HEADER_START || '✗ Não configurado'
+    }
+  };
+  res.json(diagnostics);
 };
 
 const testeLogado = async (req: Request, res: Response) => {

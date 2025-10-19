@@ -8,22 +8,16 @@ import {UsersDAO} from './DAO/usersDAO';
 import {RespostasDAO} from './DAO/respostasDAO';
 import 'express-async-errors';
 
-
-
 dotenv.config();
 
 const app: Express = express();
-
-
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/v1', mainRouter);
 
-
-const port: string | number = process.env.PORT || 3000;
-const uri: any = process.env.URI_DB;
-
+const port: string | number = process.env.APP_PORT || 3000;
+const uri: any = process.env.DB_URI;
 
 const start = async () => {
     try {
@@ -44,7 +38,3 @@ const start = async () => {
 start();
 
 export default app;
-
-
-
-

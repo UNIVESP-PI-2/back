@@ -1,0 +1,32 @@
+# Multi-stage Dockerfile para produção do Backend
+# Build argument permite DEBUG=true para HOMO e DEBUG=false para PROD
+
+FROM node:20-bullseye AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+# Stage 2: Runtime
+FROM node:20-bullseye
+
+ARG DEBUG=false
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+
+ENV NODE_ENV=production
+ENV DEBUG=${DEBUG}
+
+EXPOSE 3000
+
+CMD ["node", "dist/index.js"]
