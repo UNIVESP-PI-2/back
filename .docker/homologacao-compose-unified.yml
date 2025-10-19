@@ -8,15 +8,15 @@ services:
     image: ghcr.io/univesp-pi-2/frontend:homo-latest
     container_name: homo-front-app
     restart: unless-stopped
-    expose:
-      - "80"
+    ports:
+      - "3001:3000"
     environment:
       - NODE_ENV=production
     networks:
       - homo-network-app
       - proxy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
