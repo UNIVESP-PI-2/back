@@ -4,14 +4,19 @@ import { RequestMiddleware } from '../controllers/mainController';
 
 const authMiddleware = async (req:RequestMiddleware, res:Response, next:any) => {
     const authHeader:any  = req.headers.authorization;
-    const startWith:any = process.env.HEADER_START as string + ' ';
-
-    if(!authHeader || !authHeader.startsWith(startWith)){
+    
+    if(!authHeader){
         res.json({msg: "no token provided"});
         return
     }
     
-    const token = authHeader.split(' ')[1];
+    // Tentar extrair token de diferentes formatos
+    let token = authHeader;
+    
+    // Se vem com Bearer ou outro prefixo (HEADER_START)
+    if(authHeader.includes(' ')){
+        token = authHeader.split(' ')[1];
+    }
     
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
