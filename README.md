@@ -93,3 +93,4 @@ git push origin ci/cd
 # Deploy ready
 # Fixed CD workflow
 # Fixed .env
+# Proxy network added
