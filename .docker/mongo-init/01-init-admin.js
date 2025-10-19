@@ -1,9 +1,14 @@
 // Script de inicialização do MongoDB
 // Este script é executado automaticamente quando o container MongoDB é criado pela primeira vez
 
+// Obter nome da database da variável de ambiente MONGO_INITDB_DATABASE
+// Se não estiver definida, usar 'backend_app'
+const databaseName = process.env.MONGO_INITDB_DATABASE || 'backend_app';
+
+print(`📦 Conectando à database: ${databaseName}`);
+
 // Conectar à base de dados da aplicação
-// Substitua 'backend_app' pelo nome da sua base de dados (valor da variável DATABASE)
-db = db.getSiblingDB('backend_app');
+db = db.getSiblingDB(databaseName);
 
 // Verificar se o usuário admin já existe
 const existingAdmin = db.users.findOne({ email: "admin@123" });
@@ -21,6 +26,7 @@ if (!existingAdmin) {
         print("✅ Usuário administrador criado com sucesso!");
         print("   Email: admin@123");
         print("   Senha: admin");
+        print("   Database: " + databaseName);
     } else {
         print("❌ Erro ao criar usuário administrador");
     }
@@ -32,7 +38,7 @@ if (!existingAdmin) {
 // Exemplo:
 // db.users.insertOne({
 //     email: "user@test.com",
-//     senha: "123456",
+//     password: "123456",
 //     createdAt: new Date(),
 //     isAdmin: false
 // });
