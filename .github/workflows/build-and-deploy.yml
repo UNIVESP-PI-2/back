@@ -38,11 +38,11 @@ jobs:
       - name: Lint
         run: npm run lint 2>/dev/null || echo "Lint não configurado"
 
+      - name: Testes de unidade
+        run: npm test
+
       - name: Build do projeto
         run: npm run build
-
-      - name: Testes de unidade
-        run: npm test 2>/dev/null || echo "Testes não configurados"
 
       - name: Gerar tags e metadados
         id: meta
